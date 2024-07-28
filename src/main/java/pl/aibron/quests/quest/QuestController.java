@@ -19,6 +19,10 @@ public class QuestController {
         quest.setUser(user);
         return questService.saveDetails(quest);
     }
+    @GetMapping("")
+    public String home(){
+        return "Home";
+    }
 
     @GetMapping("/quests")
     public List<Quest> getAllQuests(@AuthenticationPrincipal User user){

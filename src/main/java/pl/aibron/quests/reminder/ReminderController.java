@@ -15,8 +15,8 @@ public class ReminderController {
     private ReminderService reminderService;
 
     @PostMapping("/reminders")
-    public Reminder postReminder(@RequestBody Reminder quest){
-        return reminderService.saveDetails(quest);
+    public Reminder postReminder(@RequestBody Reminder reminder){
+        return reminderService.saveDetails(reminder);
     }
 
     @GetMapping("/reminders")
