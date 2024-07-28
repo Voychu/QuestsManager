@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static org.springframework.http.HttpMethod.GET;
+
 
 @Configuration
 @EnableWebSecurity
@@ -31,7 +33,8 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .exceptionHandling().authenticationEntryPoint(authEntryPoint).and()
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/users/register").permitAll()
+                        .requestMatchers("/register").permitAll()
+                        .requestMatchers(GET,"/users").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 //.formLogin(Customizer.withDefaults())
