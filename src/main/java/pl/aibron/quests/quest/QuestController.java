@@ -19,13 +19,14 @@ public class QuestController {
         quest.setUser(user);
         return questService.saveDetails(quest);
     }
-    @GetMapping("")
-    public String home(){
-        return "Home";
-    }
+//    @GetMapping("")
+//    public String home(){
+//        return "redirect:/index.html";
+//    }
 
     @GetMapping("/quests")
     public List<Quest> getAllQuests(@AuthenticationPrincipal User user){
+        System.out.println(user);
 
         int user_id = user.getId();
         return questService.getAllDetails(user_id);

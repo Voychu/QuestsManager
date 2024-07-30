@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Recorder</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.0/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<button id="startBtn">Start Recording</button>
+<button id="stopBtn" disabled>Stop Recording</button>
+
+<script>
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioBlob;
+    let textBlob;
+    let stompClient;
+
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
+    function connect() {
+        const socket = new SockJS('/gs-guide-websocket');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, (frame) => {
+            console.log('Connected: ' + frame);
+        });
+    }
+
+    startBtn.addEventListener('click', async () => {
+        audioChunks = [];
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+            audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            console.log('Recording saved:', audioBlob);
+
+            textBlob = await audioBlob.text();
+            console.log(textBlob);
+
+            // // Send the textBlob in chunks to the WebSocket server
+            // const chunkSize = 16000; // Adjust the chunk size as needed
+            // for (let i = 0; i < textBlob.length; i += chunkSize) {
+            //     const chunk = textBlob.slice(i, i + chunkSize);
+            //     stompClient.send("/sendAudio", {}, JSON.stringify({ audioData: chunk }));
+            // }
+            stompClient.send("/sendAudio", {}, JSON.stringify({ audioData: "END_OF_AUDIO" }));
+
+        };
+
+        mediaRecorder.start();
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+    });
+
+    stopBtn.addEventListener('click', () => {
+        mediaRecorder.stop();
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    });
+
+    connect();
+</script>
+</body>
+</html>
